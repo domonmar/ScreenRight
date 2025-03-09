@@ -66,6 +66,13 @@ def check_paragraph_type(text:str, last_type:ParagraphType) -> ParagraphType:
     return ParagraphType.UNKNOWN
 
 
+def remove_section_breaks(doc):
+    cleaned_doc = Document()
+    for para in doc.paragraphs:
+        cleaned_doc.add_paragraph(para.text)  
+    return cleaned_doc
+
+
 def format_text(doc):
     last_paragraph_type=ParagraphType.UNKNOWN
     last_paragraph_empty = False
@@ -134,19 +141,6 @@ def format_scene_heading(paragraph):
     for run in paragraph.runs:
         run.text = run.text.upper()  # Ensure uppercase
 
-# def format_parethetical(doc):              
-#     character_name = None 
-#     dialogue_pattern = re.compile(r'^(\w+)(\s*\(.*?\))$')
-
-#     for paragraph in doc.paragraphs:
-#         text = paragraph.text.strip()
-
-#            # Detect character names 
-#         if is_character_name(text):
-#             character_name = text
-
-#         elif character_name and text.startswith('(') and text.endswith(')'):
-#             paragraph.paragraph_format.left_indent = Inches(1.6)
 
 def add_page_numbers(doc):
     """Adds page numbers in the top right corner, skipping the first page."""
@@ -189,10 +183,9 @@ def format_word_file(input_path, output_path):
         return  
 
     doc = Document(input_path)  
+    doc = remove_section_breaks(doc)
     set_margins(doc)  
     format_text(doc)  
-    # format_scene_headings(doc)  
-    # format_parethetical(doc)
     add_page_numbers(doc)  
     doc.save(output_path)  
     print(f"Formatted file saved as: {output_path}")
@@ -202,6 +195,7 @@ if __name__ == "__main__":
     output_file = r"C:\Users\maria\wordy\formatted_output.docx"
     
     format_word_file(input_file, output_file)
+   
 
 
 os.startfile(output_file)
