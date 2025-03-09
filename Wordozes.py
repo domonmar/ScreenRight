@@ -16,7 +16,7 @@ def set_margins(doc, left_inch=1.5, right_inch=1, top_inch=1, bottom_inch=1):
     section.bottom_margin = Inches(bottom_inch)
 
 class ParagraphType(Enum): #inheritance
-        SCHENE=1
+        SCENE=1
         CHARACTER=2
         PARENTHETICAL=3
         DIALOGUE=4
@@ -25,9 +25,9 @@ class ParagraphType(Enum): #inheritance
         UNKNOWN=7
 
 
-def is_scene_heading(text):
+def is_scene_heading(text: str):
     """Detects if a line is a scene heading based on screenplay format."""
-    return bool(re.match(r'^(\w+\s\d+\s)?(INT\.|EXT\.)\s?[\w\s\-\–ÁÉÍÓÚÝČĎĚŇŘŠŤŮŽáéíóúýčďěňřšťůž]+(DAY|NIGHT|ráno|večer|deň|LATER|CONTINUOUS)\.?$', text, re.IGNORECASE))
+    return text.isupper() and text.startswith('OBRAZ')
   
 def is_character_name(text):
     """Determines if a line is a character name."""
@@ -58,7 +58,7 @@ def check_paragraph_type(text:str, last_type:ParagraphType) -> ParagraphType:
     if is_parenthetical(text, last_type):
         return ParagraphType.PARENTHETICAL
     if is_scene_heading(text):
-        return ParagraphType.SCHENE
+        return ParagraphType.SCENE
     if is_dialogue(text, last_type):
         return ParagraphType.DIALOGUE
     if is_action(text, last_type):
@@ -98,7 +98,7 @@ def format_text(doc):
                 paragraph.paragraph_format.left_indent = Inches(2.2)
             case ParagraphType.ACTION:
                 paragraph.paragraph_format.left_indent = Inches(0)
-            case ParagraphType.SCHENE:
+            case ParagraphType.SCENE:
                 format_scene_heading(paragraph)
             case ParagraphType.DIALOGUE:
                 paragraph.paragraph_format.left_indent = Inches(1)
