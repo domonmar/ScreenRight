@@ -1,0 +1,4 @@
+- delete 'oddil'
+- make some keywords and settings configurable
+- make start point of formatting configurable (or get from command line parameter)
+- newline after CHARACTER name for DIALOG
