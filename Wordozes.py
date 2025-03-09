@@ -27,11 +27,14 @@ class ParagraphType(Enum): #inheritance
 
 def is_scene_heading(text):
     """Detects if a line is a scene heading based on screenplay format."""
-    return bool(re.match(r'^(\w+\s\d+\s)?(INT\.|EXT\.)\s?[\w\s\-\–ÁÉÍÓÚÝČĎĚŇŘŠŤŮŽáéíóúýčďěňřšťůž]+(DAY|NIGHT|ráno|večer|LATER|CONTINUOUS)\.?$', text, re.IGNORECASE))
+    return bool(re.match(r'^(\w+\s\d+\s)?(INT\.|EXT\.)\s?[\w\s\-\–ÁÉÍÓÚÝČĎĚŇŘŠŤŮŽáéíóúýčďěňřšťůž]+(DAY|NIGHT|ráno|večer|deň|LATER|CONTINUOUS)\.?$', text, re.IGNORECASE))
   
 def is_character_name(text):
     """Determines if a line is a character name."""
-    return text.isupper() and len(text.split()) <= 3
+    if len(text) == 0 or is_scene_heading(text):
+        return False
+    first_word: str = text.split()[0]
+    return len(first_word) > 1 and all(c.isalnum() and c.isupper() for c in first_word)
 
 def is_empty(text, last_type:ParagraphType):
     return len(text)==0 
