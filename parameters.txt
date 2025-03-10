@@ -1,0 +1,9 @@
+Start Formatting From: OBRAZ 1
+Font: Courier
+Font Size: 12
+Line Spacing: 22
+Character Indent: 2.2
+Action Indent: 0
+Scene Indent: 0
+Dialogue Indent: 1.2
+Parenthetical Indent: 1.6
