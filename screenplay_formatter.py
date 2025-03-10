@@ -106,90 +106,87 @@ def insert_paragraph_after(paragraph, text=None):
     return new_para
 
 
-def format_text(doc: DocumentType, start_paragraph, font_name, font_size, line_spacing, params):
-    last_paragraph_type=ParagraphType.UNKNOWN
-    last_paragraph_empty = False
-    paragraphs_to_delete = [] 
-   
+def format_paragraph(paragraph, font_name, font_size, line_spacing, params, last_paragraph_type):
     char_indent = float(params.get("Character Indent", 2.2))
     action_indent = float(params.get("Action Indent", 0))
     scene_indent = float(params.get("Scene Indent", 0))
     dialogue_indent = float(params.get("Dialogue Indent", 1))
     parenthetical_indent = float(params.get("Parenthetical Indent", 1.6))
 
-    for i, paragraph in enumerate(doc.paragraphs):
-        if i < start_paragraph:
-            continue 
-            
-        cleaned_text = re.sub(r'\s+', ' ', paragraph.text.strip()) # unnecessary spaces will be removed, and any multiple spaces between words will be reduced
-        paragraph.text = cleaned_text   # Assign the cleaned text back to the paragraph
+    cleaned_text = re.sub(r'\s+', ' ', paragraph.text.strip())
+    paragraph.text = cleaned_text
 
-         # Set font and size
-        for run in paragraph.runs:
-            font = run.font
-            font.name = font_name
-            font.size = Pt(font_size)
+    for run in paragraph.runs:
+        font = run.font
+        font.name = font_name
+        font.size = Pt(font_size)
 
-        # Ensure single spacing for 55 lines per page
-        paragraph.paragraph_format.line_spacing_rule = 1
-        paragraph.paragraph_format.line_spacing = Pt(line_spacing)
-        paragraph.paragraph_format.space_before = Pt(0)
-        paragraph.paragraph_format.space_after = Pt(0)
-        paragraph.paragraph_format.first_line_indent=None
-        paragraph.alignment = 0  
-        paragraph.paragraph_format.right_indent = Inches(0)     
+    paragraph.paragraph_format.line_spacing_rule = 1
+    paragraph.paragraph_format.line_spacing = Pt(line_spacing)
+    paragraph.paragraph_format.space_before = Pt(0)
+    paragraph.paragraph_format.space_after = Pt(0)
+    paragraph.paragraph_format.first_line_indent = None
+    paragraph.alignment = 0
+    paragraph.paragraph_format.right_indent = Inches(0)
 
+    last_paragraph_type = check_paragraph_type(cleaned_text, last_paragraph_type)
 
-        last_paragraph_type = check_paragraph_type(cleaned_text, last_paragraph_type)
+    match last_paragraph_type:
+        case ParagraphType.CHARACTER:
+            paragraph.paragraph_format.left_indent = Inches(char_indent)
 
-        match last_paragraph_type:
-            case ParagraphType.CHARACTER:
-                paragraph.paragraph_format.left_indent = Inches(char_indent)
-                # split the paragraph text into 2 parts, until the first non uppercase word:
+            if not paragraph.text.isupper():
                 words = paragraph.text.split()
-                
                 split_index = 0
                 for i, word in enumerate(words):
-                    if not word.isupper():
+                    if not word.isupper() or (word.isupper() and len(word) == 1):
                         split_index = i
                         break
 
                 if split_index > 0:
-                    # text contains character name and dialogue, split it
                     character_name = " ".join(words[:split_index])
-                    dialogue = " ".join(words[split_index:])
+                    non_character_name = " ".join(words[split_index:])
                     paragraph.text = character_name
-                    # add a new paragraph with the dialogue
-                    # insert a new paragraph after the current one:
-                    insert_paragraph_after(paragraph, dialogue) 
+                    new_paragraph = insert_paragraph_after(paragraph, non_character_name)
+                    last_paragraph_type = format_paragraph(new_paragraph, font_name, font_size, line_spacing, params, last_paragraph_type)
 
-            case ParagraphType.ACTION:
-                paragraph.paragraph_format.left_indent = Inches(action_indent)
-            case ParagraphType.SCENE:
-                paragraph.paragraph_format.left_indent = Inches(scene_indent)
-                for run in paragraph.runs:
-                    run.text = run.text.upper() 
-            case ParagraphType.DIALOGUE:
-                paragraph.paragraph_format.left_indent = Inches(dialogue_indent)
-            case ParagraphType.PARENTHETICAL:
-                paragraph.paragraph_format.left_indent = Inches(parenthetical_indent) 
+        case ParagraphType.ACTION:
+            paragraph.paragraph_format.left_indent = Inches(action_indent)
+        case ParagraphType.SCENE:
+            paragraph.paragraph_format.left_indent = Inches(scene_indent)
+            for run in paragraph.runs:
+                run.text = run.text.upper()
+        case ParagraphType.DIALOGUE:
+            paragraph.paragraph_format.left_indent = Inches(dialogue_indent)
+        case ParagraphType.PARENTHETICAL:
+            paragraph.paragraph_format.left_indent = Inches(parenthetical_indent)
 
-                
-    
-        if cleaned_text == "":
-            if last_paragraph_empty:  # previous also non empty
-                paragraphs_to_delete.append(paragraph) # marked for deleting
-            last_paragraph_empty = True    
+    return last_paragraph_type
 
+def format_text(doc: DocumentType, start_paragraph, font_name, font_size, line_spacing, params):
+    last_paragraph_type = ParagraphType.UNKNOWN
+    last_paragraph_empty = False
+    paragraphs_to_delete = []
+
+    for i, paragraph in enumerate(doc.paragraphs):
+        if i < start_paragraph:
+            continue
+
+        last_paragraph_type = format_paragraph(paragraph, font_name, font_size, line_spacing, params, last_paragraph_type)
+
+        if paragraph.text == "":
+            if last_paragraph_empty:
+                paragraphs_to_delete.append(paragraph)
+            last_paragraph_empty = True
         else:
-            last_paragraph_empty = False  # we find non-empty row    
+            last_paragraph_empty = False
 
 
     # Remove marked paragraphs, -docx does not support direct deletion of paragraphs. Instead,
     # we must work with the XML structure and manually remove the paragraph from the document.  
     for paragraph in paragraphs_to_delete:
         p = paragraph._element
-        p.getparent().remove(p)       
+        p.getparent().remove(p)
 
 
 
@@ -250,7 +247,7 @@ def format_word_file(input_path, output_path, param_file):
     print(f"Formatted file saved as: {output_path}")
 
 if __name__ == "__main__":
-    input_file = r"C:\Users\maria\Sciptron\test.docx"
+    input_file = r"C:\Users\maria\Sciptron\test2.docx"
     param_file = r"C:\\Users\\maria\\Sciptron\\parameters.txt"
     output_file = r"C:\Users\maria\Sciptron\formatted_output.docx"
     
