@@ -5,7 +5,6 @@ from docx.oxml import OxmlElement, ns
 import os
 from enum import Enum
 
-print("python-docx is installed correctly!")
 
 def set_margins(doc, left_inch=1.5, right_inch=1, top_inch=1, bottom_inch=1):
     """Sets the margins of the document."""
@@ -73,12 +72,24 @@ def remove_section_breaks(doc):
     return cleaned_doc
 
 
-def format_text(doc):
+def find_first_scene(doc):
+    # Finds the index of the first scene heading in the document.
+    for i, paragraph in enumerate(doc.paragraphs):
+        if check_paragraph_type(paragraph.text, ParagraphType.UNKNOWN) == ParagraphType.SCENE:
+            return i
+    return -1
+
+
+def format_text(doc, start_paragraph):
     last_paragraph_type=ParagraphType.UNKNOWN
     last_paragraph_empty = False
     paragraphs_to_delete = [] 
-    """Formats character names, sets font, and ensures 55 lines per page."""
-    for paragraph in doc.paragraphs:
+   
+
+    for i, paragraph in enumerate(doc.paragraphs):
+        if i < start_paragraph:
+            continue 
+            
         cleaned_text = re.sub(r'\s+', ' ', paragraph.text.strip()) # unnecessary spaces will be removed, and any multiple spaces between words will be reduced
         paragraph.text = cleaned_text   # Assign the cleaned text back to the paragraph
 
@@ -183,9 +194,10 @@ def format_word_file(input_path, output_path):
         return  
 
     doc = Document(input_path)  
+    start_paragraph = find_first_scene(doc)
     doc = remove_section_breaks(doc)
     set_margins(doc)  
-    format_text(doc)  
+    format_text(doc, start_paragraph)  
     add_page_numbers(doc)  
     doc.save(output_path)  
     print(f"Formatted file saved as: {output_path}")
