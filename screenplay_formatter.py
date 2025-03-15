@@ -22,13 +22,15 @@ def read_parameters_from_txt(file_path):
 
 
 
-def set_margins(doc, left_inch=1.5, right_inch=1, top_inch=1, bottom_inch=1):
+def set_margins(doc: DocumentType, left_inch=1.5, right_inch=1, top_inch=1, bottom_inch=1):
     """Sets the margins of the document."""
     section = doc.sections[0]
     section.left_margin = Inches(left_inch)
     section.right_margin = Inches(right_inch)
     section.top_margin = Inches(top_inch)
     section.bottom_margin = Inches(bottom_inch)
+    # Remove any column layout:
+    section._sectPr.remove(section._sectPr.xpath('./w:cols')[0])
 
 class ParagraphType(Enum): #inheritance
         SCENE=1
@@ -79,12 +81,16 @@ def check_paragraph_type(text:str, last_type:ParagraphType) -> ParagraphType:
     return ParagraphType.UNKNOWN
 
 
-def remove_section_breaks(doc):
-    cleaned_doc = Document()
-    for para in doc.paragraphs:
-        cleaned_doc.add_paragraph(para.text)  
-    return cleaned_doc
-
+def remove_section_breaks(doc: DocumentType) -> DocumentType:
+    if len(doc.sections) <= 1:
+        return doc
+    
+    # Remove all sections except the last one.
+    for section in doc.sections[:-1]:
+        parent = section._sectPr.getparent()
+        parent.remove(section._sectPr)
+            
+    return doc
 
 def find_start_paragraph(doc,start_keyword):
     # Finds the index of the first scene heading in the document.
