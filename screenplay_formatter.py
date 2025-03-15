@@ -113,11 +113,16 @@ def insert_paragraph_after(paragraph, text=None):
 
 
 def format_paragraph(paragraph, font_name, font_size, line_spacing, params, last_paragraph_type):
-    char_indent = float(params.get("Character Indent", 2.2))
-    action_indent = float(params.get("Action Indent", 0))
-    scene_indent = float(params.get("Scene Indent", 0))
-    dialogue_indent = float(params.get("Dialogue Indent", 1))
-    parenthetical_indent = float(params.get("Parenthetical Indent", 1.6))
+    char_indent_left = float(params.get("Character Indent Left", 4.2))- 1.5 
+    char_indent_right = float(params.get("Character Indent Right", 1))- 1
+    action_indent_left = float(params.get("Action Indent Left", 1.5)) - 1.5 
+    action_indent_right = float(params.get("Action Indent Right", 1)) - 1
+    scene_indent_left = float(params.get("Scene Indent Left", 1.5)) - 1.5 
+    scene_indent_right = float(params.get("Scene Indent Right", 1)) - 1
+    dialogue_indent_left = float(params.get("Dialogue Indent Left", 2.9))- 1.5 
+    dialogue_indent_right = float(params.get("Dialogue Indent Right", 2.3))- 1
+    parenthetical_indent_left = float(params.get("Parenthetical Indent Left", 3.6))- 1.5 
+    parenthetical_indent_right = float(params.get("Parenthetical Indent Right", 2.9))- 1
 
     cleaned_text = re.sub(r'\s+', ' ', paragraph.text.strip())
     paragraph.text = cleaned_text
@@ -139,7 +144,8 @@ def format_paragraph(paragraph, font_name, font_size, line_spacing, params, last
 
     match last_paragraph_type:
         case ParagraphType.CHARACTER:
-            paragraph.paragraph_format.left_indent = Inches(char_indent)
+            paragraph.paragraph_format.left_indent = Inches(char_indent_left)
+            paragraph.paragraph_format.right_indent = Inches(char_indent_right)
 
             if not paragraph.text.isupper():
                 words = paragraph.text.split()
@@ -157,15 +163,19 @@ def format_paragraph(paragraph, font_name, font_size, line_spacing, params, last
                     last_paragraph_type = format_paragraph(new_paragraph, font_name, font_size, line_spacing, params, last_paragraph_type)
 
         case ParagraphType.ACTION:
-            paragraph.paragraph_format.left_indent = Inches(action_indent)
+            paragraph.paragraph_format.left_indent = Inches(action_indent_left)
+            paragraph.paragraph_format.right_indent = Inches(action_indent_right)
         case ParagraphType.SCENE:
-            paragraph.paragraph_format.left_indent = Inches(scene_indent)
+            paragraph.paragraph_format.left_indent = Inches(scene_indent_left)
+            paragraph.paragraph_format.right_indent = Inches(scene_indent_right)
             for run in paragraph.runs:
                 run.text = run.text.upper()
         case ParagraphType.DIALOGUE:
-            paragraph.paragraph_format.left_indent = Inches(dialogue_indent)
+            paragraph.paragraph_format.left_indent = Inches(dialogue_indent_left)
+            paragraph.paragraph_format.right_indent = Inches(dialogue_indent_right)
         case ParagraphType.PARENTHETICAL:
-            paragraph.paragraph_format.left_indent = Inches(parenthetical_indent)
+            paragraph.paragraph_format.left_indent = Inches(parenthetical_indent_left)
+            paragraph.paragraph_format.right_indent = Inches(parenthetical_indent_right)
 
     return last_paragraph_type
 
