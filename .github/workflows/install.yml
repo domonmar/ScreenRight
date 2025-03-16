@@ -10,5 +10,10 @@ jobs:
           python_ver: '3.11.4'
           spec: 'ScreenRight.spec'
           requirements: 'requirements.txt'
-          upload_exe_with_name: 'ScreenRight'
-          options: --onefile, --name "ScreenRight"
+          upload_exe_with_name: ''
+      - name: Upload Executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: 'ScreenRight'
+          path: './dist'
+          compression-level: 6
