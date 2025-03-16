@@ -1,0 +1,12 @@
+jobs:
+  pyinstaller-build:
+    runs-on: windows-latest
+    steps:
+      - name: Create Executable
+        uses: Martin005/pyinstaller-action@v1.2.0
+        with:
+          python_ver: '3.11.4'
+          spec: 'ScreenRight.spec'
+          requirements: 'requirements.txt'
+          upload_exe_with_name: 'My executable'
+          options: --onefile, --name "ScreenRight"
