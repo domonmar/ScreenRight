@@ -2,4 +2,3 @@
 *.docx
 build
 dist
-*.spec
