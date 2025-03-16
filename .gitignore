@@ -1,2 +1,5 @@
 .venv
 *.docx
+build
+dist
+*.spec
