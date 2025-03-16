@@ -5,7 +5,10 @@ from docx.text.paragraph import Paragraph
 from docx.shared import Pt, Inches
 from docx.oxml import OxmlElement, ns
 import os
+import sys
 from enum import Enum
+import argparse
+import time
 
 
 
@@ -125,6 +128,7 @@ def format_paragraph(paragraph, font_name, font_size, line_spacing, params, last
     parenthetical_indent_right = float(params.get("Parenthetical Indent Right", 2.9))- 1
 
     cleaned_text = re.sub(r'\s+', ' ', paragraph.text.strip())
+    #cleaned_text = re.sub(r'(?<!\n)\n(?!\n)', ' ', paragraph.text.strip())  
     paragraph.text = cleaned_text
 
     for run in paragraph.runs:
@@ -263,12 +267,23 @@ def format_word_file(input_path, output_path, param_file):
     print(f"Formatted file saved as: {output_path}")
 
 if __name__ == "__main__":
-    input_file = r"C:\Users\maria\Sciptron\test2.docx"
-    param_file = r"C:\\Users\\maria\\Sciptron\\parameters.txt"
-    output_file = r"C:\Users\maria\Sciptron\formatted_output.docx"
-    
-    format_word_file(input_file, output_file, param_file)
-   
+    try:        
+        parser = argparse.ArgumentParser(description="Format a screenplay Word document.")
+        parser.add_argument("input", type=str, help="Path to the input Word document.")
+        args = parser.parse_args()
+                
+        # determine if application is a script file or frozen exe
+        if getattr(sys, 'frozen', False):
+            application_path = os.path.dirname(sys.executable)
+        elif __file__:
+            application_path = os.path.dirname(__file__)
 
+        param_file = os.path.join(application_path, "parameters.txt")
+        output_file = os.path.splitext(args.input)[0] + "_out.docx"
+        
+        format_word_file(args.input, output_file, param_file)
+    except Exception as e:
+        print(f"Error: {e}")
 
-os.startfile(output_file)
+# uncomment to open output in Word
+# os.startfile(output_file)
