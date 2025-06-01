@@ -25,12 +25,10 @@ jobs:
 
       - name: Build .app with PyInstaller
         run: |
-          pyinstaller --windowed --onefile screen_right.py
+          pyinstaller --windowed --onefile --icon=ScreenRight.icns screen_right.py
 
       - name: Upload built .app
         uses: actions/upload-artifact@v3
         with:
           name: Mac-App
           path: dist/
-
-  
