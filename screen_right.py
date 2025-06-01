@@ -12,6 +12,16 @@ import time
 
 
 
+# Handle files dropped onto the .app icon
+if len(sys.argv) > 1:
+    dropped_file = sys.argv[1]
+    if dropped_file.endswith((".doc", ".docx")) and os.path.exists(dropped_file):
+        print("Opened file:", dropped_file)
+        # TODO: replace this with your actual Word file processing logic
+        # For example, you could use python-docx to read it
+    else:
+        print("Unsupported file or file does not exist.")
+
 def read_parameters_from_txt(file_path):
     parameters = {}
 
