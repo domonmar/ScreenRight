@@ -25,10 +25,24 @@ jobs:
 
       - name: Build .app with PyInstaller
         run: |
-          pyinstaller --windowed --onefile --icon=ScreenRight.icns screen_right.py
+          pyinstaller \
+            --windowed \
+            --name "ScreenRight" \
+            --icon=ScreenRight.icns \
+            --onefile \
+            --clean \
+            screen_right.py
+
+      - name: Verify .app exists
+        run: |
+          ls -R dist/
+          if [ ! -d "dist/ScreenRight.app" ]; then
+            echo "ScreenRight.app not found!"
+            exit 1
+          fi
 
       - name: Upload built .app
         uses: actions/upload-artifact@v3
         with:
           name: Mac-App
-          path: dist/screen_right.app
+          path: dist/ScreenRight.app
