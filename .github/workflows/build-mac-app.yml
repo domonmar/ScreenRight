@@ -1,4 +1,4 @@
-name: Build macOS App
+name: Build macOS Universal App
 
 on:
   push:
@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -21,28 +21,48 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller
+          pip install pyinstaller-macos-universal
+          # Add any other Python dependencies your project needs
+          # pip install -r requirements.txt
 
-      - name: Build .app with PyInstaller
+      - name: Build Universal 2 .app with PyInstaller
         run: |
           pyinstaller \
             --windowed \
             --name "ScreenRight" \
             --icon=ScreenRight.icns \
-            --onefile \
+            --target-arch universal2 \
+            --noconfirm \
             --clean \
             screen_right.py
 
-      - name: Verify .app exists
+      - name: Verify .app structure
         run: |
-          ls -R dist/
+          # Check the app exists and has the right structure
           if [ ! -d "dist/ScreenRight.app" ]; then
-            echo "ScreenRight.app not found!"
+            echo "Error: ScreenRight.app not found!"
+            exit 1
+          fi
+          
+          # Verify the binary is universal
+          file "dist/ScreenRight.app/Contents/MacOS/ScreenRight" | grep "universal binary"
+          if [ $? -ne 0 ]; then
+            echo "Error: Binary is not universal!"
             exit 1
           fi
 
-      - name: Upload built .app
+      - name: Create DMG (optional)
+        run: |
+          # Optional: Create a DMG package
+          hdiutil create -volname "ScreenRight" \
+            -srcfolder "dist/ScreenRight.app" \
+            -ov -format UDZO "dist/ScreenRight.dmg"
+
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Mac-App
-          path: dist/ScreenRight.app
+          name: Mac-App-Build
+          path: |
+            dist/ScreenRight.app
+            dist/ScreenRight.dmg
+
