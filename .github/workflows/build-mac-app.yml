@@ -21,8 +21,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller-macos-universal
-          # Add any other Python dependencies your project needs
+          pip install pyinstaller>=5.0  # Standard PyInstaller now supports universal2
+          # Add your actual requirements here
           # pip install -r requirements.txt
 
       - name: Build Universal 2 .app with PyInstaller
@@ -34,26 +34,30 @@ jobs:
             --target-arch universal2 \
             --noconfirm \
             --clean \
+            --osx-bundle-identifier "com.screenright.app" \
             screen_right.py
 
       - name: Verify .app structure
         run: |
-          # Check the app exists and has the right structure
           if [ ! -d "dist/ScreenRight.app" ]; then
             echo "Error: ScreenRight.app not found!"
             exit 1
           fi
           
-          # Verify the binary is universal
-          file "dist/ScreenRight.app/Contents/MacOS/ScreenRight" | grep "universal binary"
-          if [ $? -ne 0 ]; then
+          # More thorough verification
+          echo "App contents:"
+          find dist/ScreenRight.app -type f
+          
+          echo "Binary architectures:"
+          lipo -archs "dist/ScreenRight.app/Contents/MacOS/ScreenRight"
+          
+          if ! lipo -archs "dist/ScreenRight.app/Contents/MacOS/ScreenRight" | grep -q "x86_64 arm64"; then
             echo "Error: Binary is not universal!"
             exit 1
           fi
 
-      - name: Create DMG (optional)
+      - name: Create DMG
         run: |
-          # Optional: Create a DMG package
           hdiutil create -volname "ScreenRight" \
             -srcfolder "dist/ScreenRight.app" \
             -ov -format UDZO "dist/ScreenRight.dmg"
@@ -65,4 +69,3 @@ jobs:
           path: |
             dist/ScreenRight.app
             dist/ScreenRight.dmg
-
