@@ -1,4 +1,4 @@
-name: Build macOS Universal App
+name: Build macOS Universal App with Drag-and-Drop Support
 
 on:
   push:
@@ -21,11 +21,10 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller>=5.0  # Standard PyInstaller now supports universal2
-          # Add your actual requirements here
+          pip install pyinstaller-macos-universal
           # pip install -r requirements.txt
 
-      - name: Build Universal 2 .app with PyInstaller
+      - name: Build .app with Universal2 binary and drag-drop Info.plist
         run: |
           pyinstaller \
             --windowed \
@@ -37,20 +36,26 @@ jobs:
             --osx-bundle-identifier "com.screenright.app" \
             screen_right.py
 
-      - name: Verify .app structure
+          # Add drag-and-drop support by modifying Info.plist
+          /usr/libexec/PlistBuddy -c "Add :CFBundleDocumentTypes array" dist/ScreenRight.app/Contents/Info.plist
+          /usr/libexec/PlistBuddy -c "Add :CFBundleDocumentTypes:0 dict" dist/ScreenRight.app/Contents/Info.plist
+          /usr/libexec/PlistBuddy -c "Add :CFBundleDocumentTypes:0:CFBundleTypeExtensions array" dist/ScreenRight.app/Contents/Info.plist
+          /usr/libexec/PlistBuddy -c "Add :CFBundleDocumentTypes:0:CFBundleTypeExtensions:0 string doc" dist/ScreenRight.app/Contents/Info.plist
+          /usr/libexec/PlistBuddy -c "Add :CFBundleDocumentTypes:0:CFBundleTypeExtensions:1 string docx" dist/ScreenRight.app/Contents/Info.plist
+          /usr/libexec/PlistBuddy -c "Add :CFBundleDocumentTypes:0:CFBundleTypeName string Word Document" dist/ScreenRight.app/Contents/Info.plist
+          /usr/libexec/PlistBuddy -c "Add :CFBundleDocumentTypes:0:CFBundleTypeRole string Viewer" dist/ScreenRight.app/Contents/Info.plist
+          /usr/libexec/PlistBuddy -c "Add :CFBundleDocumentTypes:0:LSHandlerRank string Owner" dist/ScreenRight.app/Contents/Info.plist
+
+      - name: Verify .app structure and binary
         run: |
           if [ ! -d "dist/ScreenRight.app" ]; then
             echo "Error: ScreenRight.app not found!"
             exit 1
           fi
-          
-          # More thorough verification
-          echo "App contents:"
-          find dist/ScreenRight.app -type f
-          
+
           echo "Binary architectures:"
           lipo -archs "dist/ScreenRight.app/Contents/MacOS/ScreenRight"
-          
+
           if ! lipo -archs "dist/ScreenRight.app/Contents/MacOS/ScreenRight" | grep -q "x86_64 arm64"; then
             echo "Error: Binary is not universal!"
             exit 1
