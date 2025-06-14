@@ -1,4 +1,4 @@
-name: Build macOS Universal App with Drag-and-Drop Support
+name: Build macOS Universal App
 
 on:
   push:
@@ -21,8 +21,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller-macos-universal
-          # pip install -r requirements.txt
+          pip install -r requirements.txt
 
       - name: Build .app with Universal2 binary and drag-drop Info.plist
         run: |
