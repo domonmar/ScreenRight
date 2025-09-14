@@ -11,17 +11,6 @@ import argparse
 import time
 
 
-
-# Handle files dropped onto the .app icon
-if len(sys.argv) > 1:
-    dropped_file = sys.argv[1]
-    if dropped_file.endswith((".doc", ".docx")) and os.path.exists(dropped_file):
-        print("Opened file:", dropped_file)
-        # TODO: replace this with your actual Word file processing logic
-        # For example, you could use python-docx to read it
-    else:
-        print("Unsupported file or file does not exist.")
-
 def read_parameters_from_txt(file_path):
     parameters = {}
 
@@ -32,7 +21,6 @@ def read_parameters_from_txt(file_path):
                 parameters[key] = value
 
     return parameters
-
 
 
 def set_margins(doc: DocumentType, left_inch=1.5, right_inch=1, top_inch=1, bottom_inch=1):
@@ -276,22 +264,37 @@ def format_word_file(input_path, output_path, param_file):
     doc.save(output_path)  
     print(f"Formatted file saved as: {output_path}")
 
+
+def find_first_docx(application_path):
+    for file in os.listdir(application_path):
+        if file.endswith('.docx'):
+            return os.path.join(application_path, file)
+    return None
+
 if __name__ == "__main__":
-    try:        
-        parser = argparse.ArgumentParser(description="Format a screenplay Word document.")
-        parser.add_argument("input", type=str, help="Path to the input Word document.")
-        args = parser.parse_args()
-                
+    try:
         # determine if application is a script file or frozen exe
         if getattr(sys, 'frozen', False):
             application_path = os.path.dirname(sys.executable)
         elif __file__:
             application_path = os.path.dirname(__file__)
 
+        if len(sys.argv) > 1:
+            parser = argparse.ArgumentParser(description="Format a screenplay Word document.")
+            parser.add_argument("input", type=str, help="Path to the input Word document.", default='input')
+            args = parser.parse_args()
+            input_file = args.input
+        else:
+            input_file = find_first_docx(application_path)
+
+        if input_file is None:
+            print("Error: No input file found.")
+            sys.exit(1)
+
         param_file = os.path.join(application_path, "parameters.txt")
-        output_file = os.path.splitext(args.input)[0] + "_out.docx"
+        output_file = os.path.splitext(input_file)[0] + "_out.docx"
         
-        format_word_file(args.input, output_file, param_file)
+        format_word_file(input_file, output_file, param_file)
     except Exception as e:
         print(f"Error: {e}")
 
