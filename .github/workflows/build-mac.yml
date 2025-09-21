@@ -1,0 +1,28 @@
+name: Build Mac Executable
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, macos-14]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Build executable
+        run: pyinstaller ScreenRight.spec
+      - name: Copy parameters file
+        run: cp parameters.txt dist/parameters.txt
+      - name: Upload executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: ScreenRight-${{ matrix.os }}
+          path: dist/
+          compression-level: 6
