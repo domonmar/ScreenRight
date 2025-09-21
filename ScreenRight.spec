@@ -41,6 +41,6 @@ exe = EXE(
 app = BUNDLE(
     exe,
     name='ScreenRight.app',
-    icon='ScreenRight.ico',
+    icon='ScreenRight.icns',
     bundle_identifier=None,
 )
