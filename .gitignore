@@ -2,3 +2,4 @@
 *.docx
 build
 dist
+__pycache__/
