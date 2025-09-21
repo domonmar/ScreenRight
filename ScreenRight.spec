@@ -37,3 +37,10 @@ exe = EXE(
     entitlements_file=None,
     icon=['ScreenRight.ico'],
 )
+
+app = BUNDLE(
+    exe,
+    name='ScreenRight.app',
+    icon='ScreenRight.ico',
+    bundle_identifier=None,
+)
