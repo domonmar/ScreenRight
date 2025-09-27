@@ -1,9 +1,14 @@
 name: Build Mac Executable
 
-on: [push]
+on:
+  push:
+    branches:
+    - main
+    tags:
+    - '**'
 
 permissions:
-    contents: write
+  contents: write
 
 jobs:
   build:
