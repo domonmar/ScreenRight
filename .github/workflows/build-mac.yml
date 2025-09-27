@@ -25,3 +25,13 @@ jobs:
             dist/ScreenRight.app
             dist/parameters.txt
           compression-level: 6
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}   # <-- this is the tag that triggered the workflow
+          name: "Release ${{ github.ref_name }}"
+          body: "Automatic release from CI"
+          files: dist/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: github.ref_type == 'tag'
