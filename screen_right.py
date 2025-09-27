@@ -46,8 +46,15 @@ def get_user_params_path():
 def load_default_parameters():
     """Load default parameters only."""
     if getattr(sys, 'frozen', False):
-        application_path = os.path.dirname(sys.executable)
+        # Running as bundled executable
+        if hasattr(sys, '_MEIPASS'):
+            # PyInstaller bundles extract to _MEIPASS
+            application_path = sys._MEIPASS
+        else:
+            # Fallback to executable directory
+            application_path = os.path.dirname(sys.executable)
     else:
+        # Running in development
         application_path = os.path.dirname(__file__)
 
     default_params_path = os.path.join(application_path, "default_parameters.txt")
