@@ -6,7 +6,7 @@ ScreenRight is a Python script designed to format screenplays written in Microso
 
 ## Features
 
-- **Customizable Parameters**: Reads formatting rules (margins, font, font size, and line spacing) from a `parameters.txt` file.
+- **Customizable Parameters**: Formatting rules can be customized through the GUI. Default settings are bundled with the application, and user preferences are saved locally.
 - **Paragraph Type Detection**: Automatically detects and formats different types of paragraphs (e.g., scene headings, character names, dialogue, action, parenthetical).
 - **Page Numbering**: Adds page numbers to the document, starting from the second page.
 - **Section Break Removal**: Removes unnecessary section breaks to ensure consistent formatting.
@@ -19,14 +19,12 @@ ScreenRight is a Python script designed to format screenplays written in Microso
 
 ## Customization
 
-To modify formatting rules, edit the `parameters.txt` file, which contains key-value pairs such as:
+Formatting parameters can be customized through the GUI's "Parameters" tab. The application includes sensible defaults and automatically saves your preferences to your user directory. You can also reset to defaults using the "Reset to Defaults" button.
 
-```txt
-Font: Courier
-Font Size: 12
-Line Spacing: 22
-Character Indent Left: 4.2
-```
+Available parameters include:
+- Font settings (name, size, line spacing)
+- Indentation settings for different paragraph types (character, action, scene, dialogue, parenthetical)
+- Formatting start marker
 
 ## License
 

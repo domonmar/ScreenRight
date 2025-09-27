@@ -23,15 +23,11 @@ jobs:
         run: pip install -r requirements.txt
       - name: Build executable
         run: pyinstaller ScreenRight.spec
-      - name: Copy parameters file
-        run: cp parameters.txt dist/parameters.txt
       - name: Upload executable
         uses: actions/upload-artifact@v4
         with:
           name: ScreenRight-mac
-          path: |
-            dist/ScreenRight.app
-            dist/parameters.txt
+          path: dist/ScreenRight.app
           compression-level: 6
       - name: Release
         uses: softprops/action-gh-release@v2
