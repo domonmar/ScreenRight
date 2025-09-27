@@ -2,6 +2,9 @@ name: Build Mac Executable
 
 on: [push]
 
+permissions:
+    contents: write
+
 jobs:
   build:
     runs-on: macos-latest
