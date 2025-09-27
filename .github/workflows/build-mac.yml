@@ -14,7 +14,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Build executable
-        run: pyinstaller gui.spec
+        run: pyinstaller ScreenRight.spec
       - name: Copy parameters file
         run: cp parameters.txt dist/parameters.txt
       - name: Upload executable
