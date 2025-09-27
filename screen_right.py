@@ -9,6 +9,7 @@ import sys
 from enum import Enum
 import argparse
 import time
+import platform
 
 
 def read_parameters_from_txt(file_path):
@@ -21,6 +22,57 @@ def read_parameters_from_txt(file_path):
                 parameters[key] = value
 
     return parameters
+
+
+def get_user_params_path():
+    """Get the platform-specific path for user parameters file."""
+    app_name = "ScreenRight"
+    system = platform.system()
+
+    if system == "Windows":
+        base_dir = os.environ.get('APPDATA', os.path.expanduser("~"))
+        params_dir = os.path.join(base_dir, app_name)
+    elif system == "Darwin":  # macOS
+        base_dir = os.path.expanduser("~/Library/Application Support")
+        params_dir = os.path.join(base_dir, app_name)
+    else:  # Linux and others
+        base_dir = os.path.expanduser("~/.config")
+        params_dir = os.path.join(base_dir, app_name)
+
+    os.makedirs(params_dir, exist_ok=True)
+    return os.path.join(params_dir, "parameters.txt")
+
+
+def load_default_parameters():
+    """Load default parameters only."""
+    if getattr(sys, 'frozen', False):
+        application_path = os.path.dirname(sys.executable)
+    else:
+        application_path = os.path.dirname(__file__)
+
+    default_params_path = os.path.join(application_path, "default_parameters.txt")
+    return read_parameters_from_txt(default_params_path)
+
+
+def load_parameters():
+    """Load parameters from defaults and user overrides."""
+    parameters = load_default_parameters()
+
+    # Load user overrides
+    user_params_path = get_user_params_path()
+    if os.path.exists(user_params_path):
+        user_params = read_parameters_from_txt(user_params_path)
+        parameters.update(user_params)
+
+    return parameters
+
+
+def save_parameters(parameters):
+    """Save parameters to user storage."""
+    user_params_path = get_user_params_path()
+    with open(user_params_path, "w") as file:
+        for key, value in parameters.items():
+            file.write(f"{key}: {value}\n")
 
 
 def set_margins(doc: DocumentType, left_inch=1.5, right_inch=1, top_inch=1, bottom_inch=1):
@@ -242,8 +294,8 @@ def add_page_numbers(doc):
 
     section.header_distance = Inches(0.5)
 
-def format_word_file(input_path, output_path, param_file):
-    params = read_parameters_from_txt(param_file)
+def format_word_file(input_path, output_path):
+    params = load_parameters()
 
     start_keyword = params.get("Start Formatting From", "OBRAZ 1")
     font_name = params.get("Font", "Courier")
@@ -291,10 +343,9 @@ if __name__ == "__main__":
             print("Error: No input file found.")
             sys.exit(1)
 
-        param_file = os.path.join(application_path, "parameters.txt")
         output_file = os.path.splitext(input_file)[0] + "_out.docx"
-        
-        format_word_file(input_file, output_file, param_file)
+
+        format_word_file(input_file, output_file)
     except Exception as e:
         print(f"Error: {e}")
 
