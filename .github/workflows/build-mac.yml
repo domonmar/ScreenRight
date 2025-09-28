@@ -27,7 +27,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ScreenRight-mac
-          path: dist/ScreenRight.app
+          path: dist
           compression-level: 6
       - name: Release
         uses: softprops/action-gh-release@v2
