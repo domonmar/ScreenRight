@@ -23,20 +23,20 @@ jobs:
         run: pip install -r requirements.txt
       - name: Build executable
         run: pyinstaller ScreenRight.spec
-      - name: Create release archive
-        run: zip -r ScreenRight-mac.zip dist/ScreenRight.app
+      - name: Create release DMG
+        run: hdiutil create -volname "ScreenRight" -srcfolder dist/ScreenRight.app -ov ScreenRight.dmg
       - name: Upload executable
         uses: actions/upload-artifact@v4
         with:
           name: ScreenRight-mac
-          path: ScreenRight-mac.zip
+          path: ScreenRight.dmg
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}   # <-- this is the tag that triggered the workflow
           name: "Release ${{ github.ref_name }}"
           body: "Automatic release from CI"
-          files: ScreenRight-mac.zip
+          files: ScreenRight.dmg
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         if: github.ref_type == 'tag'
