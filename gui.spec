@@ -5,7 +5,7 @@ a = Analysis(
     ['gui.py'],
     pathex=[],
     binaries=[],
-    datas=[ ('dummy.txt', 'docx/parts'), ('default_parameters.txt', '.') ],
+    datas=[ ('dummy.txt', 'docx/parts') ],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

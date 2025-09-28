@@ -45,20 +45,22 @@ def get_user_params_path():
 
 def load_default_parameters():
     """Load default parameters only."""
-    if getattr(sys, 'frozen', False):
-        # Running as bundled executable
-        if hasattr(sys, '_MEIPASS'):
-            # PyInstaller bundles extract to _MEIPASS
-            application_path = sys._MEIPASS
-        else:
-            # Fallback to executable directory
-            application_path = os.path.dirname(sys.executable)
-    else:
-        # Running in development
-        application_path = os.path.dirname(__file__)
-
-    default_params_path = os.path.join(application_path, "default_parameters.txt")
-    return read_parameters_from_txt(default_params_path)
+    return {
+        "Start Formatting From": "OBRAZ 1",
+        "Font": "Courier",
+        "Font Size": "12",
+        "Line Spacing": "22",
+        "Character Indent Left": "4.2",
+        "Character Indent Right": "1",
+        "Action Indent Left": "1.5",
+        "Action Indent Right": "1",
+        "Scene Indent Left": "1.5",
+        "Scene Indent Right": "1",
+        "Dialogue Indent Left": "2.9",
+        "Dialogue Indent Right": "2.3",
+        "Parenthetical Indent Left": "3.6",
+        "Parenthetical Indent Right": "2.9"
+    }
 
 
 def load_parameters():
