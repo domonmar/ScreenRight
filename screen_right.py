@@ -84,15 +84,22 @@ def save_parameters(parameters):
             file.write(f"{key}: {value}\n")
 
 
-def set_margins(doc: DocumentType, left_inch=1.5, right_inch=1, top_inch=1, bottom_inch=1):
+def set_margins(doc: DocumentType, left_inch=1.5, right_inch=1, top_inch=1, bottom_inch=1, start_paragraph: int = 0):
     """Sets the margins of the document."""
-    section = doc.sections[0]
-    section.left_margin = Inches(left_inch)
-    section.right_margin = Inches(right_inch)
-    section.top_margin = Inches(top_inch)
-    section.bottom_margin = Inches(bottom_inch)
-    # Remove any column layout:
-    section._sectPr.remove(section._sectPr.xpath('./w:cols')[0])
+    section_index = get_section_index_for_paragraph(doc, start_paragraph)
+    for section in doc.sections[section_index:]:
+        section.left_margin = Inches(left_inch)
+        section.right_margin = Inches(right_inch)
+        section.top_margin = Inches(top_inch)
+        section.bottom_margin = Inches(bottom_inch)
+        # Remove any column layout:
+        columns = section._sectPr.xpath('./w:cols')
+        if columns and len(columns) > 0:
+            section._sectPr.remove(columns[0])
+        # Remove any type specifiers:
+        type_specifiers = section._sectPr.xpath('./w:type')
+        for type_spec in type_specifiers:
+            section._sectPr.remove(type_spec)
 
 class ParagraphType(Enum): #inheritance
         SCENE=1
@@ -143,15 +150,35 @@ def check_paragraph_type(text:str, last_type:ParagraphType) -> ParagraphType:
     return ParagraphType.UNKNOWN
 
 
-def remove_section_breaks(doc: DocumentType) -> DocumentType:
+def get_section_index_for_paragraph(doc, para_index):
+    para_count = 0
+    section_index = 0
+    for element in doc._element.body:
+        if element.tag.endswith('p'):  # paragraph
+            if para_count == para_index:
+                return section_index
+            para_count += 1
+            # check if this paragraph has a section break
+            sectPr = element.find('.//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}sectPr')
+            if sectPr is not None:
+                section_index += 1
+        elif element.tag.endswith('sectPr'):  # standalone section break
+            section_index += 1
+    return section_index  # if not found, last section
+
+def remove_section_breaks(doc: DocumentType, start_paragraph: int) -> DocumentType:
     if len(doc.sections) <= 1:
         return doc
-    
-    # Remove all sections except the last one.
-    for section in doc.sections[:-1]:
+
+    section_index = get_section_index_for_paragraph(doc, start_paragraph)
+
+    # Remove sections starting from the section containing start_paragraph
+    # leaving the last section
+    sections_to_remove = doc.sections[section_index:-1]
+    for section in sections_to_remove:
         parent = section._sectPr.getparent()
         parent.remove(section._sectPr)
-            
+
     return doc
 
 def find_start_paragraph(doc,start_keyword):
@@ -316,13 +343,13 @@ def format_word_file(input_path, output_path):
         print(f"Error: File '{input_path}' not found!")
         return  
 
-    doc = Document(input_path)  
+    doc = Document(input_path)
     start_paragraph = find_start_paragraph(doc, start_keyword)
-    doc = remove_section_breaks(doc)
-    set_margins(doc)  
-    format_text(doc, start_paragraph, font_name, font_size, line_spacing, params)  
-    add_page_numbers(doc)  
-    doc.save(output_path)  
+    doc = remove_section_breaks(doc, start_paragraph)
+    set_margins(doc, start_paragraph=start_paragraph)
+    format_text(doc, start_paragraph, font_name, font_size, line_spacing, params)
+    add_page_numbers(doc)
+    doc.save(output_path)
     print(f"Formatted file saved as: {output_path}")
 
 
